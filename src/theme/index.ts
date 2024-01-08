@@ -21,8 +21,9 @@ export const THEME = extendTheme({
     },
   },
   fonts: {
-    bold: 'Roboto_700Bold',
-    regular: 'Roboto_400Regular',
+    bold: 'Karla_700Bold',
+    regular: 'Karla_400Regular',
+    light: 'Karla_300Light',
   },
   fontSizes: {
     xs: 12,
@@ -30,5 +31,9 @@ export const THEME = extendTheme({
     md: 16,
     lg: 20,
     xl: 24,
+  },
+  sizes: {
+    11: 45,
+    33: 148,
   },
 });
