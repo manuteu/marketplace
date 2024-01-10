@@ -13,6 +13,7 @@ export default function SignIn() {
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
+      bounces={false}
     >
       <KeyboardAvoidingView {...(Platform.OS === 'ios' && { behavior: 'position' })} flex={1}>
         <VStack bgColor='gray.100' px={10} borderBottomRadius={24} justifyContent='center' h='full'>
@@ -34,7 +35,21 @@ export default function SignIn() {
             </Heading>
 
             <Input placeholder='E-mail' />
-            <Input placeholder='Senha' type={showPassword ? 'text' : 'password'} InputRightElement={<TouchableOpacity onPress={() => setShowPassword(prev => !prev)} style={{ padding: 12 }}><Feather name="eye" size={22} color="#5F5B62" /></TouchableOpacity>} />
+            <Input
+              placeholder='Senha'
+              type={showPassword ? 'text' : 'password'}
+              InputRightElement={
+                <TouchableOpacity
+                  onPress={() => setShowPassword(prev => !prev)}
+                  style={{ padding: 12 }}
+                >
+                  {showPassword
+                    ? <Feather name="eye" size={22} color="#5F5B62" />
+                    : <Feather name="eye-off" size={22} color="#5F5B62" />
+                  }
+                </TouchableOpacity>
+              }
+            />
             <Button mt={4} title='Entrar' bg='blue.300' textColor='gray.100' />
           </Center>
         </VStack>
