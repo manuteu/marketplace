@@ -6,9 +6,17 @@ import { Feather } from '@expo/vector-icons';
 import Button from '@components/Button';
 import LogoSvg from '@assets/logo_marketplace.svg'
 import LogoNameSvg from '@assets/logo_name.svg'
+import { useNavigation } from '@react-navigation/native';
+import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false)
+  const { navigate } = useNavigation<AuthNavigatorRoutesProps>()
+
+  const handleGoToSignUp = () => {
+    navigate('signUp')
+  }
+
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
@@ -57,7 +65,7 @@ export default function SignIn() {
       <VStack bg='white' position='fixed' justifyContent='center' h='1/4' px={10} >
         <Center>
           <Text fontFamily='regular' color='gray.500'>Ainda não tem acesso?</Text>
-          <Button mt={4} title='Criar uma conta' bg='gray.300' textColor='gray.600' />
+          <Button onPress={handleGoToSignUp} mt={4} title='Criar uma conta' bg='gray.300' textColor='gray.600' />
         </Center>
       </VStack>
     </ScrollView>

@@ -8,12 +8,19 @@ import LogoSvg from '@assets/logo_marketplace.svg'
 import EditSvg from '@assets/edit_icon.svg'
 import * as ImagePicker from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
+import { useNavigation } from '@react-navigation/native';
+import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false)
   const [loadingImage, setLoadingImage] = useState(false)
   const [userPhoto, setUserPhoto] = useState<string | undefined>()
   const toast = useToast()
+  const { navigate } = useNavigation<AuthNavigatorRoutesProps>()
+
+  const handleGoToSignIn = () => {
+    navigate('signIn')
+  }
 
   const handleUserPhotoSelect = async () => {
     setLoadingImage(true)
@@ -110,7 +117,7 @@ export default function SignUp() {
       <VStack justifyContent='center' px={10} pt={10} pb={16}>
         <Center>
           <Text fontFamily='regular' color='gray.500'>Já tem uma conta?</Text>
-          <Button mt={4} title='Ir para o login' bg='gray.300' textColor='gray.600' />
+          <Button onPress={handleGoToSignIn} mt={4} title='Ir para o login' bg='gray.300' textColor='gray.600' />
         </Center>
       </VStack>
     </ScrollView>
