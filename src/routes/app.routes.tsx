@@ -21,8 +21,8 @@ const { Navigator, Screen } = createBottomTabNavigator<AppRoutes>()
 export function AppRoutes() {
   const { sizes, colors } = useTheme()
   const iconSize = sizes[6]
-  const tabBarActiveTintColor = colors.green[500]
-  const tabBarInactiveTintColor = colors.gray[200]
+  const tabBarActiveTintColor = colors.gray[600]
+  const tabBarInactiveTintColor = colors.gray[400]
 
   return (
     <Navigator screenOptions={{
@@ -31,11 +31,9 @@ export function AppRoutes() {
       tabBarActiveTintColor,
       tabBarInactiveTintColor,
       tabBarStyle: {
-        backgroundColor: colors.gray[600],
+        backgroundColor: colors.gray[100],
         borderTopWidth: 0,
-        borderTopRightRadius: 12,
-        borderTopLeftRadius: 12,
-        height: Platform.OS === 'android' ? 'auto' : 72,
+        height: 72,
         paddingBottom: sizes[10],
         paddingTop: sizes[6]
       },
@@ -43,7 +41,8 @@ export function AppRoutes() {
         paddingHorizontal: sizes[10],
         paddingBottom: sizes[6],
         paddingTop: sizes[2]
-      }
+      },
+      tabBarHideOnKeyboard: true
     }} >
       <Screen
         name='home'
