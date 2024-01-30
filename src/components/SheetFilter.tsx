@@ -68,7 +68,7 @@ export default function SheetFilter({ onClose, ...rest }: IActionsheetProps) {
   }
 
   return (
-    <Actionsheet maxW='container' {...rest}>
+    <Actionsheet maxW='container' onClose={onClose} {...rest}>
       <Actionsheet.Content bg='gray.100' alignItems='flex-start' px={6} pb={8}>
         <VStack py={5}>
           <HStack alignItems='center' justifyContent='space-between' w='full' mb={4}>
