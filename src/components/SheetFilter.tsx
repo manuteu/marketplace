@@ -7,7 +7,7 @@ import CheckboxGroup, { CheckboxList } from './CheckboxGroup'
 import Button from './Button'
 import { Feather } from '@expo/vector-icons'
 
-export default function SheetFilter({ ...rest }: IActionsheetProps) {
+export default function SheetFilter({ onClose, ...rest }: IActionsheetProps) {
   const [chipValue, setChipValue] = useState([
     {
       selected: false,
@@ -71,16 +71,16 @@ export default function SheetFilter({ ...rest }: IActionsheetProps) {
     <Actionsheet maxW='container' {...rest}>
       <Actionsheet.Content bg='gray.100' alignItems='flex-start' px={6} pb={8}>
         <VStack py={5}>
-          <HStack alignItems='center' justifyContent='space-between' w='full'>
+          <HStack alignItems='center' justifyContent='space-between' w='full' mb={4}>
             <Text color='gray.700' fontFamily='bold' fontSize='lg'>Filtrar anúncios</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={onClose}>
               <Feather name="x" size={22} color="#9F9BA1" />
             </TouchableOpacity>
           </HStack>
 
           <Text mb={3} color='gray.600' fontFamily='bold' fontSize='sm'>Condição</Text>
           <RadioChip chips={chipValue} onSelected={onPressRadioChip} />
-          <Text mt={3} color='gray.600' fontFamily='bold' fontSize='sm'>Aceita troca?</Text>
+          <Text mt={5} color='gray.600' fontFamily='bold' fontSize='sm'>Aceita troca?</Text>
           <Box alignItems='flex-start'>
             <Switch size={Platform.OS === 'ios' ? 'sm' : 'md'} mt={Platform.OS === 'ios' ? 2 : -1} ml={-2} value={acceptExchange} onToggle={setAcceptExchange} onTrackColor='blue.300' offTrackColor='gray.300' />
           </Box>
