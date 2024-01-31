@@ -37,7 +37,6 @@ export default function CheckboxGroup({ checkboxList, onSelected }: Props) {
           }}
           borderRadius={3}
           borderColor='gray.400'
-          bgColor='transparent'
         >
           <Text
             fontSize='md'

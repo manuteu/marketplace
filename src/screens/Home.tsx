@@ -6,6 +6,7 @@ import { Feather } from '@expo/vector-icons'
 import PosterSvg from '@assets/poster.svg'
 import SheetFilter from '@components/SheetFilter'
 import Input from '@components/Input'
+import ProductCard from '@components/ProductCard'
 
 export default function Home() {
   const [openFilters, setOpenFilters] = useState(false)
@@ -50,7 +51,7 @@ export default function Home() {
         <Text mt={8} fontFamily='regular' fontSize='sm'>Seus produtos anuciados para venda</Text>
         <Pressable bgColor='#6479c71a' borderRadius={6} mt={3} mb={8}>
           <HStack alignItems='center' py={3} px={4} style={{ gap: 8 }} >
-            <PosterSvg fill='#364D9D' width={20} height={20} />
+            <PosterSvg fill='#364D9D' width={22} height={22} />
             <VStack flex={1}>
               <Text fontFamily='bold' fontSize='lg' color='gray.600'>4</Text>
               <Text fontFamily='regular' fontSize='xs' color='gray.600'>anúncios ativos</Text>
@@ -81,7 +82,7 @@ export default function Home() {
             }
           />
         </Box>
-        <Box pb={1600}></Box>
+        <ProductCard />
       </ScrollView>
       <SheetFilter isOpen={openFilters} onClose={closeFilters} />
     </SafeAreaView>
