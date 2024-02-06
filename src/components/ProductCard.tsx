@@ -5,8 +5,8 @@ import User from '@assets/user.png'
 
 export default function ProductCard() {
   return (
-    <Box w='47%'>
-      <Image w='fit-content' h={32} alt='Product Image' rounded='md' source={Tenis} />
+    <Box>
+      <Image w='auto' h={32} resizeMethod='resize' alt='Product Image' rounded='md' source={Tenis} />
       <Box position='absolute' w='full' p={1} flexDirection='row' justifyContent='space-between' >
         <Image borderWidth={1} borderColor='gray.100' alt='Product Image' rounded='full' source={User} />
         <Box py={1} px={3} bg='gray.600' rounded='full'>

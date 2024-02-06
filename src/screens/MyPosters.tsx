@@ -5,8 +5,17 @@ import { TouchableOpacity } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import Select from '@components/Select'
 import ProductCard from '@components/ProductCard'
+import GridView from '@components/GridView'
 
 export default function MyPosters() {
+
+  const dummyData = [
+    { name: "John Doe", id: 1 },
+    { name: "Jemmy", id: 2 },
+    { name: "Niraj", id: 3 },
+    { name: "You", id: 4 },
+  ];
+
   return (
     <SafeAreaView style={{ paddingTop: 24 }}>
       <VStack px={6}>
@@ -25,7 +34,14 @@ export default function MyPosters() {
             <Select />
           </HStack>
 
-          <ProductCard />
+          <GridView
+            data={dummyData}
+            renderItem={(item: any) => {
+              return (
+                <ProductCard />
+              );
+            }}
+          />
         </ScrollView>
       </VStack>
     </SafeAreaView>
