@@ -7,9 +7,19 @@ import PosterSvg from '@assets/poster.svg'
 import SheetFilter from '@components/SheetFilter'
 import Input from '@components/Input'
 import ProductCard from '@components/ProductCard'
+import GridView from '@components/GridView'
+import { useNavigation } from '@react-navigation/native'
+import { AppNavigatorRoutesProps } from '@routes/app.routes'
 
 export default function Home() {
+  const { navigate } = useNavigation<AppNavigatorRoutesProps>()
   const [openFilters, setOpenFilters] = useState(false)
+  const dummyData = [
+    { title: "Luminária pendente", value: '45,00', state: 'new', status: 'active' },
+    { title: "Coturno feminino", value: '80,00', state: 'new', status: 'active' },
+    { title: "Tênis vermelho", value: '59,90', state: 'used', status: 'active' },
+    { title: "Camimsa rosa", value: '50,00', state: 'used', status: 'disabled' },
+  ];
 
   const userPhoto = false
 
@@ -56,7 +66,7 @@ export default function Home() {
               <Text fontFamily='bold' fontSize='lg' color='gray.600'>4</Text>
               <Text fontFamily='regular' fontSize='xs' color='gray.600'>anúncios ativos</Text>
             </VStack>
-            <Pressable flexDirection='row' alignItems='center' style={{ gap: 10 }}>
+            <Pressable onPress={() => navigate('posters')} flexDirection='row' alignItems='center' style={{ gap: 10 }}>
               <Text fontFamily='bold' fontSize='xs' color='blue.500'>Meus anúncios</Text>
               <Feather name="arrow-right" size={16} color="#364D9D" />
             </Pressable>
@@ -82,7 +92,14 @@ export default function Home() {
             }
           />
         </Box>
-        <ProductCard />
+        <GridView
+          data={dummyData}
+          renderItem={(item: any) => {
+            return (
+              <ProductCard {...item}/>
+            );
+          }}
+        />
       </ScrollView>
       <SheetFilter isOpen={openFilters} onClose={closeFilters} />
     </SafeAreaView>

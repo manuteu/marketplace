@@ -10,10 +10,10 @@ import GridView from '@components/GridView'
 export default function MyPosters() {
 
   const dummyData = [
-    { name: "John Doe", id: 1 },
-    { name: "Jemmy", id: 2 },
-    { name: "Niraj", id: 3 },
-    { name: "You", id: 4 },
+    { title: "Luminária pendente", value: '45,00', state: 'new', status: 'active' },
+    { title: "Coturno feminino", value: '80,00', state: 'new', status: 'active' },
+    { title: "Tênis vermelho", value: '59,90', state: 'used', status: 'active' },
+    { title: "Camimsa rosa", value: '50,00', state: 'used', status: 'disabled' },
   ];
 
   return (
@@ -38,7 +38,7 @@ export default function MyPosters() {
             data={dummyData}
             renderItem={(item: any) => {
               return (
-                <ProductCard />
+                <ProductCard {...item} />
               );
             }}
           />
