@@ -1,5 +1,45 @@
 import { extendTheme } from 'native-base';
 
+declare module 'native-base' {
+  interface ICustomTheme {
+    colors: {
+      blue: {
+        500: string;
+        300: string;
+      };
+      gray: {
+        700: string;
+        600: string;
+        500: string;
+        400: string;
+        300: string;
+        200: string;
+        100: string;
+      };
+      white: string;
+      red: {
+        300: string;
+      };
+    };
+    fonts: {
+      bold: string;
+      regular: string;
+      light: string;
+    };
+    fontSizes: {
+      xxs: number;
+      xs: number;
+      sm: number;
+      md: number;
+      lg: number;
+      xl: number;
+    };
+    sizes: {
+      [key: number]: number;
+    };
+  }
+}
+
 export const THEME = extendTheme({
   colors: {
     blue: {
@@ -26,6 +66,7 @@ export const THEME = extendTheme({
     light: 'Karla_300Light',
   },
   fontSizes: {
+    xxs: 10,
     xs: 12,
     sm: 14,
     md: 16,
