@@ -9,10 +9,11 @@ import Input from '@components/Input'
 import ProductCard from '@components/ProductCard'
 import GridView from '@components/GridView'
 import { useNavigation } from '@react-navigation/native'
-import { AppNavigatorRoutesProps } from '@routes/app.routes'
+import { StackNavigatorRoutesProps, TabNavigatorRoutesProps } from '@routes/app.routes'
 
 export default function Home() {
-  const { navigate } = useNavigation<AppNavigatorRoutesProps>()
+  const { navigate } = useNavigation<TabNavigatorRoutesProps>()
+  const stackNavigation = useNavigation<StackNavigatorRoutesProps>()
   const [openFilters, setOpenFilters] = useState(false)
   const dummyData = [
     { title: "Luminária pendente", value: '45,00', state: 'new', status: 'active' },
@@ -55,7 +56,7 @@ export default function Home() {
             <Text fontFamily='regular' fontSize='md'>Boas vindas,</Text>
             <Text fontFamily='bold' fontSize='md'>Matheus!</Text>
           </VStack>
-          <Button bgColor='gray.700' textColor='gray.100' iconName='plus' iconColor='#EDECEE' title='Criar anúncio' />
+          <Button onPress={() => stackNavigation.navigate('newPoster')} bgColor='gray.700' textColor='gray.100' iconName='plus' iconColor='#EDECEE' title='Criar anúncio' />
         </HStack>
 
         <Text mt={8} fontFamily='regular' fontSize='sm'>Seus produtos anuciados para venda</Text>
@@ -96,7 +97,7 @@ export default function Home() {
           data={dummyData}
           renderItem={(item: any) => {
             return (
-              <ProductCard {...item}/>
+              <ProductCard onPress={() => stackNavigation.navigate('poster', { ...item })} {...item}/>
             );
           }}
         />
