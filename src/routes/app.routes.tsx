@@ -4,21 +4,32 @@ import HomeSvg from '@assets/home.svg'
 import PosterSvg from '@assets/poster.svg'
 import SignOutSvg from '@assets/signout.svg'
 import { useTheme } from 'native-base'
-import { Platform } from 'react-native'
 import MyPosters from '@screens/MyPosters'
 import SignOut from '@screens/SignOut'
+import { createNativeStackNavigator, NativeStackNavigationProp } from '@react-navigation/native-stack'
+import NewPoster from '@screens/NewPoster'
+import Poster from '@screens/Poster'
+import EditPoster from '@screens/EditPoster'
 
-type AppRoutes = {
+type TabRoutes = {
   home: undefined;
   posters: undefined;
   signout: undefined;
 }
 
-export type AppNavigatorRoutesProps = BottomTabNavigationProp<AppRoutes>
+type StackRoutes = {
+  stackHome: undefined;
+  poster: undefined;
+  newPoster: undefined;
+  editPoster: undefined;
+}
 
-const { Navigator, Screen } = createBottomTabNavigator<AppRoutes>()
+export type TabNavigatorRoutesProps = BottomTabNavigationProp<TabRoutes>
+export type StackNavigatorRoutesProps = NativeStackNavigationProp<StackRoutes>
 
-export function AppRoutes() {
+
+const TabRouter = () => {
+  const { Navigator, Screen } = createBottomTabNavigator<TabRoutes>()
   const { sizes, colors } = useTheme()
   const iconSize = sizes[6]
   const tabBarActiveTintColor = colors.gray[600]
@@ -59,6 +70,21 @@ export function AppRoutes() {
         component={SignOut}
         options={{ tabBarIcon: ({ color }) => <SignOutSvg fill={color} width={iconSize} height={iconSize} /> }}
       />
+    </Navigator>
+  )
+}
+
+export function AppRoutes() {
+
+  const { Navigator, Screen } = createNativeStackNavigator<StackRoutes>()
+  return (
+    <Navigator screenOptions={{
+      headerShown: false,
+    }}>
+      <Screen name="stackHome" component={TabRouter} />
+      <Screen name="poster" component={Poster} />
+      <Screen name="newPoster" component={NewPoster} />
+      <Screen name="editPoster" component={EditPoster} />
     </Navigator>
   )
 }
