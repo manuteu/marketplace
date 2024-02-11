@@ -6,8 +6,11 @@ import { Feather } from '@expo/vector-icons'
 import Select from '@components/Select'
 import ProductCard from '@components/ProductCard'
 import GridView from '@components/GridView'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigatorRoutesProps } from '@routes/app.routes'
 
 export default function MyPosters() {
+  const { navigate } = useNavigation<StackNavigatorRoutesProps>()
 
   const dummyData = [
     { title: "Luminária pendente", value: '45,00', state: 'new', status: 'active' },
@@ -22,7 +25,7 @@ export default function MyPosters() {
         <HStack h={20} alignItems='center' justifyContent='space-between'>
           <Box width={30} />
           <Text fontFamily='bold' fontSize='xl' color='gray.700'>Meus anúncios</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigate('newPoster')}>
             <Feather name="plus" size={30} color="#1A181B" />
           </TouchableOpacity>
         </HStack>
@@ -38,7 +41,7 @@ export default function MyPosters() {
             data={dummyData}
             renderItem={(item: any) => {
               return (
-                <ProductCard {...item} />
+                <ProductCard onPress={() => navigate('poster', { ...item })} {...item} />
               );
             }}
           />
