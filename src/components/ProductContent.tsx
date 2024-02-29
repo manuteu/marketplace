@@ -7,7 +7,7 @@ export default function ProductContent() {
 
   const paymentMethods = ['invoice', 'pix', 'money', 'card', 'bankDeposit']
   return (
-    <VStack p={6} pb={32}>
+    <VStack p={6} pb={12}>
       <HStack alignItems='center' space={2}>
         <Image borderWidth={1} borderColor='blue.300' alt='Product Image' rounded='full' source={User} />
         <Text fontFamily='regular' fontSize='sm' color='gray.700' >Marcelin</Text>

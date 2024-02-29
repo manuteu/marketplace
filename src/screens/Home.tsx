@@ -97,7 +97,7 @@ export default function Home() {
           data={dummyData}
           renderItem={(item: any) => {
             return (
-              <ProductCard onPress={() => stackNavigation.navigate('poster', { ...item })} {...item}/>
+              <ProductCard onPress={() => stackNavigation.navigate('poster', { data: {...item}, type: 'myPoster' })} {...item}/>
             );
           }}
         />

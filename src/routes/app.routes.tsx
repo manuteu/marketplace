@@ -19,7 +19,10 @@ type TabRoutes = {
 
 type StackRoutes = {
   stackHome: undefined;
-  poster: undefined;
+  poster: {
+    data: undefined;
+    type: string;
+  };
   newPoster: undefined;
   editPoster: undefined;
 }
