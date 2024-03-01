@@ -49,6 +49,29 @@ export default function Poster() {
         </HStack>
 
         <Box width={width} height={width / 3 * 2}>
+          {data.status !== 'active' && (
+            <>
+              <Box
+                zIndex={10}
+                position='absolute'
+                width={width}
+                height={width / 3 * 2}
+                bg='gray.700'
+                opacity={70}
+              />
+              <Box
+                zIndex={20}
+                position='absolute'
+                width={width}
+                height={width / 3 * 2}
+                display='flex'
+                justifyContent='center'
+                alignItems='center'
+              >
+                <Text fontSize='sm' fontFamily='bold' color='gray.100'>ANÚNCIO DESATIVADO</Text>
+              </Box>
+            </>
+          )}
           <Carousel
             loop
             width={width}
