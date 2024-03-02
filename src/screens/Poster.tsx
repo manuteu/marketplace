@@ -41,13 +41,12 @@ export default function Poster() {
 
   return (
     <SafeAreaView style={{ paddingTop: 24, flex: 1, backgroundColor: '#EDECEE' }}>
+      <HStack px={6} h={14} alignItems='center' justifyContent='space-between'>
+        <Pressable onPress={() => navigate('stackHome')}>
+          <Feather name="arrow-left" size={24} color="#1A181B" />
+        </Pressable>
+      </HStack>
       <ScrollView showsVerticalScrollIndicator={false} >
-        <HStack px={6} h={14} alignItems='center' justifyContent='space-between'>
-          <Pressable onPress={() => navigate('stackHome')}>
-            <Feather name="arrow-left" size={24} color="#1A181B" />
-          </Pressable>
-        </HStack>
-
         <Box width={width} height={width / 3 * 2}>
           {data.status !== 'active' && (
             <>
