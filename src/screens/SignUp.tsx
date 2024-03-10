@@ -110,14 +110,14 @@ export default function SignUp() {
             <Input placeholder='Telefone' />
             <Input placeholder='Senha' textContentType="oneTimeCode" type={showPassword ? 'text' : 'password'} InputRightElement={<TouchableOpacity onPress={() => setShowPassword(prev => !prev)} style={{ padding: 12 }}><Feather name="eye" size={22} color="#5F5B62" /></TouchableOpacity>} />
             <Input placeholder='Confirmar Senha' textContentType="oneTimeCode" type={showPassword ? 'text' : 'password'} InputRightElement={<TouchableOpacity onPress={() => setShowPassword(prev => !prev)} style={{ padding: 12 }}><Feather name="eye" size={22} color="#5F5B62" /></TouchableOpacity>} />
-            <Button mt={4} title='Criar' bg='gray.700' textColor='gray.100' />
+            <Button mt={4} title='Criar' bg='gray.700' textColor='gray.100' width='full' />
           </Center>
         </VStack>
       </KeyboardAvoidingView>
       <VStack justifyContent='center' px={10} pt={10} pb={16}>
         <Center>
           <Text fontFamily='regular' color='gray.500'>Já tem uma conta?</Text>
-          <Button onPress={handleGoToSignIn} mt={4} title='Ir para o login' bg='gray.300' textColor='gray.600' />
+          <Button onPress={handleGoToSignIn} mt={4} title='Ir para o login' bg='gray.300' textColor='gray.600' width='full' />
         </Center>
       </VStack>
     </ScrollView>
