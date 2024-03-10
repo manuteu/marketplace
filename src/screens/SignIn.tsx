@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Center, Heading, ScrollView, Text, VStack, KeyboardAvoidingView } from 'native-base'
+import { Box, Center, Heading, ScrollView, Text, VStack, KeyboardAvoidingView, useToast } from 'native-base'
 import Input from '@components/Input'
 import { Platform, TouchableOpacity } from 'react-native'
 import { Feather } from '@expo/vector-icons';
@@ -8,13 +8,44 @@ import LogoSvg from '@assets/logo_marketplace.svg'
 import LogoNameSvg from '@assets/logo_name.svg'
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
+import { AppError } from '@utils/AppError';
+import { useAuth } from '@hooks/useAuth';
+
+type FormData = {
+  email: string;
+  password: string;
+}
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false)
+  const [itsLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const { navigate } = useNavigation<AuthNavigatorRoutesProps>()
+  const toast = useToast()
+  const { signIn } = useAuth()
 
   const handleGoToSignUp = () => {
     navigate('signUp')
+  }
+
+  const handleSignin = async ({ email, password }: FormData) => {
+    setIsLoading(true)
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+
+      const title = isAppError ? error.message : 'Não foi possível entrar. Tente novamente mais tarde.'
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500'
+      })
+
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -42,7 +73,11 @@ export default function SignIn() {
               Acesse sua conta
             </Heading>
 
-            <Input placeholder='E-mail' />
+            <Input
+              placeholder='E-mail'
+              value={email}
+              onChangeText={(v) => setEmail(v)}
+            />
             <Input
               placeholder='Senha'
               type={showPassword ? 'text' : 'password'}
@@ -57,8 +92,17 @@ export default function SignIn() {
                   }
                 </TouchableOpacity>
               }
+              value={password}
+              onChangeText={(v) => setPassword(v)}
             />
-            <Button mt={4} title='Entrar' bg='blue.300' textColor='gray.100' />
+            <Button
+              isLoading={itsLoading}
+              mt={4}
+              title='Entrar'
+              bg='blue.300'
+              textColor='gray.100'
+              onPress={() => handleSignin({ email, password })}
+            />
           </Center>
         </VStack>
       </KeyboardAvoidingView>

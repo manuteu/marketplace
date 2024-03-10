@@ -1,10 +1,13 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { View } from 'react-native'
+import React, { useEffect } from 'react'
+import { useAuth } from '@hooks/useAuth'
 
 export default function SignOut() {
+  const { signOut } = useAuth()
+  useEffect(() => {
+    signOut()
+  }, [])
   return (
-    <View>
-      <Text>SignOut</Text>
-    </View>
+    <View />
   )
 }
