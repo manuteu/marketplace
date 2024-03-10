@@ -101,6 +101,7 @@ export default function SignIn() {
               title='Entrar'
               bg='blue.300'
               textColor='gray.100'
+              width='full'
               onPress={() => handleSignin({ email, password })}
             />
           </Center>
@@ -109,7 +110,7 @@ export default function SignIn() {
       <VStack bg='white' position='fixed' justifyContent='center' h='1/4' px={10} >
         <Center>
           <Text fontFamily='regular' color='gray.500'>Ainda não tem acesso?</Text>
-          <Button onPress={handleGoToSignUp} mt={4} title='Criar uma conta' bg='gray.300' textColor='gray.600' />
+          <Button width='full' onPress={handleGoToSignUp} mt={4} title='Criar uma conta' bg='gray.300' textColor='gray.600' />
         </Center>
       </VStack>
     </ScrollView>
