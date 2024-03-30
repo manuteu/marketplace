@@ -1,23 +1,47 @@
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Box, HStack, ScrollView, Text, VStack } from 'native-base'
+import { Box, HStack, ScrollView, Text, VStack, useToast } from 'native-base'
 import { TouchableOpacity } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import Select from '@components/Select'
 import ProductCard from '@components/ProductCard'
 import GridView from '@components/GridView'
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { StackNavigatorRoutesProps } from '@routes/app.routes'
+import { AppError } from '@utils/AppError'
+import { api } from '@services/api'
+import { ProductDTO } from '@dtos/ProductDTO'
 
 export default function MyPosters() {
   const { navigate } = useNavigation<StackNavigatorRoutesProps>()
+  const [loading, setLoading] = useState(false)
+  const [products, setProducts] = useState<ProductDTO[]>([])
+  const toast = useToast()
 
-  const dummyData = [
-    { title: "Luminária pendente", value: '45,00', state: 'new', status: 'active' },
-    { title: "Coturno feminino", value: '80,00', state: 'new', status: 'active' },
-    { title: "Tênis vermelho", value: '59,90', state: 'used', status: 'active' },
-    { title: "Camimsa rosa", value: '50,00', state: 'used', status: 'disabled' },
-  ];
+  const handleGetPosters = async () => {
+    setLoading(true)
+    try {
+      const { data } = await api.get(`/users/products`)
+      console.log('data', data[0])
+      setProducts(data)
+
+    } catch (error) {
+      const isAppError = error instanceof AppError
+      const title = isAppError ? error.message : 'Não foi possível carregar seus anúncios.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useFocusEffect(useCallback(() => {
+    handleGetPosters()
+  }, []))
 
   return (
     <SafeAreaView style={{ paddingTop: 24 }}>
@@ -38,10 +62,10 @@ export default function MyPosters() {
           </HStack>
 
           <GridView
-            data={dummyData}
-            renderItem={(item: any) => {
+            data={products}
+            renderItem={(item: ProductDTO) => {
               return (
-                <ProductCard onPress={() => navigate('poster', { ...item })} {...item} />
+                <ProductCard onPress={() => navigate('poster', { data: item, type: 'myPoster' })} {...item} />
               );
             }}
           />

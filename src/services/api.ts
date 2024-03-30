@@ -115,11 +115,11 @@ api.registerInterceptTokenManager = (signOut) => {
   };
 };
 
-api.interceptors.request.use(
-  (config) => {
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// api.interceptors.request.use(
+//   (config) => {
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );

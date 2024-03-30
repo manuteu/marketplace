@@ -10,11 +10,19 @@ import * as ImagePicker from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
+import { api } from '@services/api';
+import { AppError } from '@utils/AppError';
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false)
   const [loadingImage, setLoadingImage] = useState(false)
-  const [userPhoto, setUserPhoto] = useState<string | undefined>()
+  const [loadingButton, setLoadingButton] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [tel, setTel] = useState('')
+  const [password, setPassword] = useState('')
+  const [userAvatar, setUserAvatar] = useState<string | undefined>()
+  const [userAvatarFormData, setUserAvatarFormData] = useState<any>()
   const toast = useToast()
   const { navigate } = useNavigation<AuthNavigatorRoutesProps>()
 
@@ -50,8 +58,15 @@ export default function SignUp() {
           })
         }
 
-        const fileExtension = photoSelected.assets[0].uri;
-        setUserPhoto(fileExtension)
+        const fileExtension = photoSelected.assets[0].uri.split(".").pop();
+        const photoFile = {
+          name: `${name}.${fileExtension}`.toLowerCase(),
+          uri: photoSelected.assets[0].uri,
+          type: `${photoSelected.assets[0].type}/${fileExtension}`,
+        } as any;
+
+        setUserAvatarFormData(photoFile);
+        setUserAvatar(photoSelected.assets[0].uri)
         toast.show({
           title: 'Foto atualizada!',
           placement: 'top',
@@ -63,6 +78,46 @@ export default function SignUp() {
       console.error(error)
     } finally {
       setLoadingImage(false)
+    }
+  }
+
+  const handleSignUp = async () => {
+    setLoadingButton(true)
+    // console.log('userAvatar', userAvatar);
+    // console.log('userAvatarFormData', userAvatarFormData);
+
+    try {
+      const form = new FormData()
+      form.append('name', name);
+      form.append('email', email);
+      form.append('tel', tel);
+      form.append('password', password);
+      form.append('avatar', userAvatarFormData)
+      console.log(form);
+      
+      const { data } = await api.post('/users', {
+        form
+        // name,
+        // email,
+        // tel,
+        // password,
+        // userAvatarFormData
+      })
+      console.log(data);
+
+    } catch (error) {
+      console.log(error);
+
+      const isAppError = error instanceof AppError;
+      const title = isAppError ? error.message : 'Não foi possível cadastrar. Tente novamente mais tarde.'
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500'
+      })
+      setLoadingButton(false)
+    } finally {
+      setLoadingButton(false)
     }
   }
 
@@ -91,11 +146,11 @@ export default function SignUp() {
                   endColor='gray.600'
                 />
               )}
-              {!loadingImage && userPhoto ?
+              {!loadingImage && userAvatar ?
                 <Image
                   rounded='full'
                   size='full'
-                  source={{ uri: userPhoto }}
+                  source={{ uri: userAvatar }}
                   alt='Foto do usuário'
                 />
                 : !loadingImage &&
@@ -105,19 +160,64 @@ export default function SignUp() {
                 <EditSvg />
               </TouchableOpacity>
             </Box>
-            <Input placeholder='Nome' />
-            <Input placeholder='E-mail' />
-            <Input placeholder='Telefone' />
-            <Input placeholder='Senha' textContentType="oneTimeCode" type={showPassword ? 'text' : 'password'} InputRightElement={<TouchableOpacity onPress={() => setShowPassword(prev => !prev)} style={{ padding: 12 }}><Feather name="eye" size={22} color="#5F5B62" /></TouchableOpacity>} />
-            <Input placeholder='Confirmar Senha' textContentType="oneTimeCode" type={showPassword ? 'text' : 'password'} InputRightElement={<TouchableOpacity onPress={() => setShowPassword(prev => !prev)} style={{ padding: 12 }}><Feather name="eye" size={22} color="#5F5B62" /></TouchableOpacity>} />
-            <Button mt={4} title='Criar' bg='gray.700' textColor='gray.100' width='full' />
+            <Input
+              placeholder='Nome'
+              value={name}
+              onChangeText={(v) => setName(v)}
+            />
+            <Input
+              placeholder='E-mail'
+              value={email}
+              onChangeText={(v) => setEmail(v)}
+            />
+            <Input
+              placeholder='Telefone'
+              value={tel}
+              onChangeText={(v) => setTel(v)}
+            />
+            <Input
+              placeholder='Senha'
+              textContentType="oneTimeCode"
+              type={showPassword ? 'text' : 'password'}
+              InputRightElement={
+                <TouchableOpacity onPress={() => setShowPassword(prev => !prev)} style={{ padding: 12 }}>
+                  <Feather name="eye" size={22} color="#5F5B62" />
+                </TouchableOpacity>}
+              value={password}
+              onChangeText={(v) => setPassword(v)}
+            />
+            <Input
+              placeholder='Confirmar Senha'
+              textContentType="oneTimeCode"
+              type={showPassword ? 'text' : 'password'}
+              InputRightElement={
+                <TouchableOpacity onPress={() => setShowPassword(prev => !prev)} style={{ padding: 12 }}>
+                  <Feather name="eye" size={22} color="#5F5B62" />
+                </TouchableOpacity>}
+            />
+            <Button
+              mt={4}
+              title='Criar'
+              bg='gray.700'
+              textColor='gray.100'
+              width='full'
+              isLoading={loadingButton}
+              onPress={handleSignUp}
+            />
           </Center>
         </VStack>
       </KeyboardAvoidingView>
       <VStack justifyContent='center' px={10} pt={10} pb={16}>
         <Center>
           <Text fontFamily='regular' color='gray.500'>Já tem uma conta?</Text>
-          <Button onPress={handleGoToSignIn} mt={4} title='Ir para o login' bg='gray.300' textColor='gray.600' width='full' />
+          <Button
+            onPress={handleGoToSignIn}
+            mt={4}
+            title='Ir para o login'
+            bg='gray.300'
+            textColor='gray.600'
+            width='full'
+          />
         </Center>
       </VStack>
     </ScrollView>

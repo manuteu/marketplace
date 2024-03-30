@@ -10,6 +10,7 @@ import { createNativeStackNavigator, NativeStackNavigationProp } from '@react-na
 import NewPoster from '@screens/NewPoster'
 import Poster from '@screens/Poster'
 import EditPoster from '@screens/EditPoster'
+import { ProductDTO } from '@dtos/ProductDTO'
 
 type TabRoutes = {
   home: undefined;
@@ -20,8 +21,8 @@ type TabRoutes = {
 type StackRoutes = {
   stackHome: undefined;
   poster: {
-    data: undefined;
-    type: string;
+    data: ProductDTO;
+    type: 'myPoster' | 'buyPoster'
   };
   newPoster: undefined;
   editPoster: undefined;

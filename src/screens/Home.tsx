@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { SafeAreaView } from 'react-native'
-import { Box, HStack, Image, Text, VStack, Pressable, ScrollView } from 'native-base'
+import { Box, HStack, Image, Text, VStack, Pressable, ScrollView, FlatList, useToast, Center } from 'native-base'
 import Button from '@components/Button'
 import { Feather } from '@expo/vector-icons'
 import PosterSvg from '@assets/poster.svg'
@@ -8,28 +8,81 @@ import SheetFilter from '@components/SheetFilter'
 import Input from '@components/Input'
 import ProductCard from '@components/ProductCard'
 import GridView from '@components/GridView'
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { StackNavigatorRoutesProps, TabNavigatorRoutesProps } from '@routes/app.routes'
+import { ProductDTO } from '@dtos/ProductDTO'
+import { api } from '@services/api'
+import { AppError } from '@utils/AppError'
+import { useAuth } from '@hooks/useAuth'
 
 export default function Home() {
   const { navigate } = useNavigation<TabNavigatorRoutesProps>()
   const stackNavigation = useNavigation<StackNavigatorRoutesProps>()
   const [openFilters, setOpenFilters] = useState(false)
-  const dummyData = [
-    { title: "Luminária pendente", value: '45,00', state: 'new', status: 'active' },
-    { title: "Coturno feminino", value: '80,00', state: 'new', status: 'active' },
-    { title: "Tênis vermelho", value: '59,90', state: 'used', status: 'active' },
-    { title: "Camimsa rosa", value: '50,00', state: 'used', status: 'disabled' },
-  ];
+  const [loading, setLoading] = useState(false)
+  const [products, setProducts] = useState<ProductDTO[]>([])
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const toast = useToast()
+  const { user } = useAuth()
 
+  const handleGetPosters = async () => {
+    setLoading(true)
+    try {
+      const { data } = await api.get(`/products`)
+      console.log('data', data[0])
+      setProducts(data)
+
+    } catch (error) {
+      const isAppError = error instanceof AppError
+      const title = isAppError ? error.message : 'Não foi possível carregar seus anúncios.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRefresh = () => {
+    try {
+      setIsRefreshing(true);
+      handleGetPosters();
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível recarregar os produtos";
+
+      toast.show({
+        title,
+        bgColor: "red.400",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
+
+  useFocusEffect(useCallback(() => {
+    handleGetPosters()
+  }, []))
   const userPhoto = false
 
   const closeFilters = () => {
     setOpenFilters(false)
   }
+
+  const EmptyList = () => (
+    <Center>
+      <Text color="gray.500">Nenhum anúncio encontrado :(</Text>
+    </Center>
+  );
+
   return (
     <SafeAreaView style={{ paddingTop: 24 }}>
-      <ScrollView p={6} stickyHeaderIndices={[3]}>
+      <Box p={6}>
         <HStack style={{ gap: 6 }} alignItems='center'>
           <Box
             w={12}
@@ -54,7 +107,7 @@ export default function Home() {
           </Box>
           <VStack flex={1}>
             <Text fontFamily='regular' fontSize='md'>Boas vindas,</Text>
-            <Text fontFamily='bold' fontSize='md'>Matheus!</Text>
+            <Text fontFamily='bold' fontSize='md'>{user.name}!</Text>
           </VStack>
           <Button onPress={() => stackNavigation.navigate('newPoster')} bgColor='gray.700' textColor='gray.100' iconName='plus' iconColor='#EDECEE' title='Criar anúncio' />
         </HStack>
@@ -93,16 +146,34 @@ export default function Home() {
             }
           />
         </Box>
-        <GridView
+        <FlatList
+          data={products}
+          renderItem={({ item }) => <ProductCard onPress={() => stackNavigation.navigate('poster', { data: { ...item }, type: 'buyPoster' })} {...item} />}
+          numColumns={2}
+          contentContainerStyle={{
+            paddingBottom: 36,
+            gap: 24,
+          }}
+          columnWrapperStyle={{
+            gap: 20,
+          }}
+          // showsVerticalScrollIndicator={false}
+          // stickyHeaderIndices={[0]}
+          // stickyHeaderHiddenOnScroll
+          // ListEmptyComponent={() => EmptyList()}
+          onRefresh={handleRefresh}
+          refreshing={isRefreshing}
+        />
+        {/* <GridView
           data={dummyData}
           renderItem={(item: any) => {
             return (
               <ProductCard onPress={() => stackNavigation.navigate('poster', { data: {...item}, type: 'myPoster' })} {...item}/>
             );
           }}
-        />
-      </ScrollView>
-      <SheetFilter isOpen={openFilters} onClose={closeFilters} />
+        /> */}
+        <SheetFilter isOpen={openFilters} onClose={closeFilters} />
+      </Box>
     </SafeAreaView>
   )
 }

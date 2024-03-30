@@ -8,19 +8,19 @@ import CardSvg from '@assets/card_icon.svg'
 import BankDepositSvg from '@assets/bank_deposit_icon.svg'
 
 interface IIcons {
-  invoice: React.JSX.Element;
+  boleto: React.JSX.Element;
   pix: React.JSX.Element;
-  money: React.JSX.Element;
+  cash: React.JSX.Element;
   card: React.JSX.Element;
-  bankDeposit: React.JSX.Element;
+  deposit: React.JSX.Element;
 }
 
 interface IType {
-  invoice: string;
+  boleto: string;
   pix: string;
-  money: string;
+  cash: string;
   card: string;
-  bankDeposit: string;
+  deposit: string;
 }
 
 type Methods = {
@@ -30,22 +30,22 @@ type Methods = {
 export default function PaymentMethodItem({ type }: Methods) {
   const renderIcon = (iconType: keyof IIcons) => {
     const icons: IIcons = {
-      invoice: <InvoiceSvg />,
+      boleto: <InvoiceSvg />,
       pix: <PixSvg />,
-      money: <MoneySvg />,
+      cash: <MoneySvg />,
       card: <CardSvg />,
-      bankDeposit: <BankDepositSvg />,
+      deposit: <BankDepositSvg />,
     }
     return icons[iconType]
   }
   const renderType = (type: keyof IType) => {
 
     const icons: IType = {
-      invoice: 'Boleto',
+      boleto: 'Boleto',
       pix: 'Pix',
-      money: 'Dinheiro',
+      cash: 'Dinheiro',
       card: 'Cartão de Crédito',
-      bankDeposit: 'Depósito Bancário',
+      deposit: 'Depósito Bancário',
     }
     return icons[type]
   }

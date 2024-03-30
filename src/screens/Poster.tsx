@@ -10,9 +10,11 @@ import Button from '@components/Button'
 import WppSvg from '@assets/wpp_icon.svg'
 import Carousel from 'react-native-reanimated-carousel'
 import { Dimensions } from 'react-native'
+import { ProductDTO } from '@dtos/ProductDTO'
+import EditSvg from '@assets/edit_icon.svg'
 
 type RouteParamsProps = {
-  data: { title: string, value: string, state: string, status: 'active' | 'deactivated' };
+  data: ProductDTO;
   type: 'myPoster' | 'buyPoster'
 }
 
@@ -45,10 +47,13 @@ export default function Poster() {
         <Pressable onPress={() => navigate('stackHome')}>
           <Feather name="arrow-left" size={24} color="#1A181B" />
         </Pressable>
+        <Pressable onPress={() => navigate('editPoster')}>
+          <EditSvg />
+        </Pressable>
       </HStack>
       <ScrollView showsVerticalScrollIndicator={false} >
         <Box width={width} height={width / 3 * 2}>
-          {data.status !== 'active' && (
+          {!data.is_active && (
             <>
               <Box
                 zIndex={10}
@@ -89,7 +94,7 @@ export default function Poster() {
           </HStack>
         </Box>
 
-        <ProductContent />
+        <ProductContent {...data} />
       </ScrollView>
       {type === 'buyPoster' ? (
         <HStack px={6} justifyContent='space-between' alignItems='center' bg='gray.100' pb={2} h={90}>
@@ -102,7 +107,7 @@ export default function Poster() {
       ) : (
         <>
           <VStack px={6} pb={5} space={2}>
-            {data.status === 'active' ?
+            {data?.is_active ?
               <Button title='Desativar anúncio' iconName='power' iconColor='#F7F7F8' bgColor='gray.700' textColor='gray.100' />
               :
               <Button title='Reativar anúncio' iconName='power' iconColor='#F7F7F8' bgColor='blue.300' textColor='gray.100' />
