@@ -12,6 +12,7 @@ export interface PaymentMethod {
 }
 
 export interface ProductImages {
+  active: boolean;
   path: string;
   id: string;
 }

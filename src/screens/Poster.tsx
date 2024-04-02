@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView, } from 'react-native-safe-area-context'
 import { Box, HStack, Image, Pressable, ScrollView, Text, VStack } from 'native-base'
 import { Feather } from '@expo/vector-icons'
@@ -12,10 +12,18 @@ import Carousel from 'react-native-reanimated-carousel'
 import { Dimensions } from 'react-native'
 import { ProductDTO } from '@dtos/ProductDTO'
 import EditSvg from '@assets/edit_icon.svg'
+import { api } from '@services/api'
+import { formatMoney } from '@utils/maks'
 
 type RouteParamsProps = {
   data: ProductDTO;
   type: 'myPoster' | 'buyPoster'
+}
+
+type carouselData = {
+  id: string;
+  path: string;
+  active: boolean;
 }
 
 export default function Poster() {
@@ -23,14 +31,10 @@ export default function Poster() {
   const { params } = useRoute()
   const { data, type } = params as RouteParamsProps
   const width = Dimensions.get('window').width;
-  const [carouselData, setcarouselData] = useState([
-    { img: Bike, id: 0, active: true },
-    { img: Bike, id: 1, active: false },
-    { img: Bike, id: 2, active: false },
-  ])
+  const [carouselData, setcarouselData] = useState<carouselData[]>([])
 
   const handleSwipeImage = (index: number) => {
-    const newCarouselData = carouselData.map((item) => {
+    const newCarouselData = carouselData.map((item: any) => {
       if (item.id === index) {
         item.active = true
       } else {
@@ -40,6 +44,16 @@ export default function Poster() {
     })
     setcarouselData(newCarouselData)
   }
+
+  useEffect(() => {
+    data.product_images.forEach((item, index) => {
+      if (index === 1) {
+        item.active = true;
+      }
+      item.active = false
+    })
+    setcarouselData(data.product_images)
+  }, [])
 
   return (
     <SafeAreaView style={{ paddingTop: 24, flex: 1, backgroundColor: '#EDECEE' }}>
@@ -53,7 +67,7 @@ export default function Poster() {
       </HStack>
       <ScrollView showsVerticalScrollIndicator={false} >
         <Box width={width} height={width / 3 * 2}>
-          {!data.is_active && (
+          {type === 'myPoster' && !data.is_active && (
             <>
               <Box
                 zIndex={10}
@@ -83,8 +97,8 @@ export default function Poster() {
             data={carouselData}
             scrollAnimationDuration={1000}
             onSnapToItem={(index) => handleSwipeImage(index)}
-            renderItem={({ index }) => (
-              <Image key={index} w='full' alt='bike_image' source={Bike} />
+            renderItem={({ item, index }) => (
+              <Image key={index} w='full' h='full' alt='bike_image' source={{ uri: `${api.defaults.baseURL}/images/${item.path}` }} />
             )}
           />
           <HStack px={1} space={2} w='full' position='absolute' bottom={1}>
@@ -100,7 +114,7 @@ export default function Poster() {
         <HStack px={6} justifyContent='space-between' alignItems='center' bg='gray.100' pb={2} h={90}>
           <HStack alignItems='center' space={1}>
             <Text fontFamily='bold' fontSize='sm' color='blue.500' mt={1.5}>R$</Text>
-            <Text fontFamily='bold' fontSize='2xl' color='blue.500'>120,00</Text>
+            <Text fontFamily='bold' fontSize='2xl' color='blue.500'>{formatMoney(data.price)}</Text>
           </HStack>
           <Button leftIcon={<WppSvg />} w='50%' title='Entrar em contato' bgColor='blue.300' textColor='gray.100' />
         </HStack>

@@ -40,7 +40,7 @@ const TabRouter = () => {
   const tabBarInactiveTintColor = colors.gray[400]
 
   return (
-    <Navigator screenOptions={{
+    <Navigator sceneContainerStyle={{ backgroundColor: colors.gray['200'] }} screenOptions={{
       headerShown: false,
       tabBarShowLabel: false,
       tabBarActiveTintColor,

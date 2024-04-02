@@ -29,7 +29,6 @@ export default function Home() {
     setLoading(true)
     try {
       const { data } = await api.get(`/products`)
-      console.log('data', data[0])
       setProducts(data)
 
     } catch (error) {
@@ -157,21 +156,11 @@ export default function Home() {
           columnWrapperStyle={{
             gap: 20,
           }}
-          // showsVerticalScrollIndicator={false}
-          // stickyHeaderIndices={[0]}
-          // stickyHeaderHiddenOnScroll
-          // ListEmptyComponent={() => EmptyList()}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={() => EmptyList()}
           onRefresh={handleRefresh}
           refreshing={isRefreshing}
         />
-        {/* <GridView
-          data={dummyData}
-          renderItem={(item: any) => {
-            return (
-              <ProductCard onPress={() => stackNavigation.navigate('poster', { data: {...item}, type: 'myPoster' })} {...item}/>
-            );
-          }}
-        /> */}
         <SheetFilter isOpen={openFilters} onClose={closeFilters} />
       </Box>
     </SafeAreaView>
