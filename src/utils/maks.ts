@@ -1,5 +1,5 @@
-export function formatMoney(v: number) {
-  if (!v) return;
+export function formatMoney(v: number | string): string {
+  if (!v) return '';
   let value = v.toString();
 
   value = value.replace(/\D/g, '');

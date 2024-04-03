@@ -9,7 +9,6 @@ import { formatMoney } from '@utils/maks'
 export default function ProductContent({ name, is_new, accept_trade, description, price, product_images, payment_methods,  }: ProductDTO) {
   const { user } = useAuth()
 
-  const paymentMethods = ['invoice', 'pix', 'money', 'card', 'bankDeposit']
   return (
     <VStack p={6} pb={12}>
       <HStack alignItems='center' space={2}>
@@ -17,7 +16,7 @@ export default function ProductContent({ name, is_new, accept_trade, description
         <Text fontFamily='regular' fontSize='sm' color='gray.700' >{user.name}</Text>
       </HStack>
 
-      <Box mt={6} px={2} h={17}  alignItems='center' flexDirection='row' bg='gray.300' rounded='full'>
+      <Box mt={6} px={2} h={17} alignSelf='flex-start' bg='gray.300' rounded='full'>
         <Text fontFamily='bold' fontSize='2xs' color='gray.600'>{is_new ? 'NOVO' : 'USADO'}</Text>
       </Box>
 

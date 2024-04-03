@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { SafeAreaView, } from 'react-native-safe-area-context'
-import { Box, HStack, Image, KeyboardAvoidingView, Pressable, Radio, ScrollView, Switch, Text, VStack } from 'native-base'
+import { Box, HStack, Image, KeyboardAvoidingView, Pressable, Radio, ScrollView, Switch, Text, VStack, useToast } from 'native-base'
 import { Dimensions, Platform } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
@@ -8,12 +8,15 @@ import * as ImagePicker from 'expo-image-picker';
 import Input from '@components/Input'
 import CheckboxGroup, { CheckboxList } from '@components/CheckboxGroup'
 import Button from '@components/Button'
+import { api } from '@services/api'
+import { AppError } from '@utils/AppError'
 
 export default function NewPoster() {
   const imageWidth = Dimensions.get('window').width / 3 - 20
   const { goBack } = useNavigation()
+  const [isLoadingButton, setIsLoadingButton] = useState(false)
   const [images, setImages] = useState<string[]>([]);
-  const [acceptExchange, setAcceptExchange] = useState(false)
+  const [acceptTrade, setAcceptTrade] = useState(false)
   const [radioValue, setRadioValue] = useState('')
   const [checkboxList, setCheckboxList] = useState<CheckboxList[]>([
     {
@@ -29,19 +32,23 @@ export default function NewPoster() {
     {
       selected: false,
       name: 'Dinheiro',
-      value: 'dinheiro',
+      value: 'cash',
     },
     {
       selected: false,
       name: 'Cartão de Crédito',
-      value: 'cartão_de_crédito',
+      value: 'card',
     },
     {
       selected: false,
       name: 'Depósito Bancário',
-      value: 'depósito_bancário',
+      value: 'deposit',
     },
   ])
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [price, setPrice] = useState('')
+  const toast = useToast()
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -52,9 +59,16 @@ export default function NewPoster() {
       quality: 1,
     });
 
-    console.log(result);
+    if (result.canceled) {
+      toast.show({
+        title: 'Imagem Cancelada',
+        tintColor: 'yellow.500',
+        placement: 'top',
+      })
+      return
+    }
 
-    if (!result.canceled && result.assets[0].uri !== null) {
+    if (result.assets[0].uri !== null) {
       const imgs: string[] = []
       imgs.push(result.assets[0].uri)
       setImages((prev: string[]) => [...prev, ...imgs]);
@@ -74,6 +88,70 @@ export default function NewPoster() {
     });
   }
 
+  const paymentMethodsPayload = () => {
+    const maps = checkboxList.filter(item => {
+      return item.selected
+    })
+    return maps.map(item => item.value)
+  }
+
+  const handleCreateImageToPoster = async (id: string) => {
+    const form = new FormData()
+    form.append('product_id', id);
+    images.forEach(image => {
+      form.append('images', new Blob(image as any))
+    })
+    try {
+      const { data } = await api.post(`/products/images`, {
+        form
+      })
+
+      console.log(data)
+
+    } catch (error) {
+      console.log(error)
+      const isAppError = error instanceof AppError
+      const title = isAppError ? error.message : 'Não foi possível cadastrar o anúncio.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500'
+      })
+    } finally {
+      setIsLoadingButton(false)
+    }
+  }
+
+  const handleCreatePoster = async () => {
+    setIsLoadingButton(true)
+    try {
+      const { data } = await api.post(`/products`, {
+        name,
+        description,
+        price: Number(price),
+        is_new: radioValue === 'new' ? true : false,
+        accept_trade: acceptTrade,
+        payment_methods: paymentMethodsPayload()
+      })
+
+      if (data) {
+        await handleCreateImageToPoster(data.id)
+      }
+
+    } catch (error) {
+      setIsLoadingButton(false)
+      const isAppError = error instanceof AppError
+      const title = isAppError ? error.message : 'Não foi possível registrar o anúncio.';
+
+      toast.show({
+        title,
+        placement: 'top',
+        bgColor: 'red.500'
+      })
+    }
+  }
+
   return (
     <SafeAreaView style={{ paddingTop: 24, flex: 1, backgroundColor: '#EDECEE' }}>
       <HStack px={6} h={14} alignItems='center' justifyContent='space-between'>
@@ -84,11 +162,10 @@ export default function NewPoster() {
         <Box w='24px' />
       </HStack>
 
-
-        <ScrollView showsVerticalScrollIndicator={false} pb={2}>
-      <KeyboardAvoidingView {...(Platform.OS === 'ios' && { behavior: 'position' })}>
+      <ScrollView showsVerticalScrollIndicator={false} pb={2}>
+        <KeyboardAvoidingView {...(Platform.OS === 'ios' && { behavior: 'position' })}>
           <VStack py={2} px={6} space={8}>
-            <VStack> 
+            <VStack>
               <VStack space={1}>
                 <Text fontSize='md' fontFamily='bold' color='gray.600'>Imagens</Text>
                 <Text fontSize='sm' fontFamily='regular' color='gray.500'>Escolha até 3 imagens para mostrar o quando o seu produto é incrível!</Text>
@@ -135,8 +212,8 @@ export default function NewPoster() {
             <VStack>
               <Box>
                 <Text fontSize='md' fontFamily='bold' color='gray.600'>Sobre o produto</Text>
-                <Input mt={3} placeholder='Título do anúncio' />
-                <Input textArea placeholder='Descrição do produto' />
+                <Input mt={3} placeholder='Título do anúncio' value={name} onChangeText={(n) => setName(n)} />
+                <Input textArea placeholder='Descrição do produto' value={description} onChangeText={(d) => setDescription(d)} />
               </Box>
 
               <Box>
@@ -151,11 +228,7 @@ export default function NewPoster() {
                   }}
                 >
                   <HStack space={5} mb={8}>
-                    <Radio
-                      value="new"
-                      w={5}
-                      h={5}
-                    >
+                    <Radio value="new" w={5} h={5}>
                       <Text fontSize='md' fontFamily='regular' color='gray.700'>
                         Produto novo
                       </Text>
@@ -174,6 +247,8 @@ export default function NewPoster() {
                 <Input
                   mt={3}
                   placeholder='Valor do produto'
+                  value={price}
+                  onChangeText={(v) => setPrice(v)}
                   InputLeftElement={
                     <Text fontSize='md' fontFamily='regular' ml={4}>
                       R$
@@ -188,8 +263,8 @@ export default function NewPoster() {
                   size={Platform.OS === 'ios' ? 'sm' : 'md'}
                   mt={Platform.OS === 'ios' ? 2 : -1}
                   ml={-2}
-                  value={acceptExchange}
-                  onToggle={setAcceptExchange}
+                  value={acceptTrade}
+                  onToggle={setAcceptTrade}
                   onTrackColor='blue.300'
                   offTrackColor='gray.300'
                 />
@@ -201,11 +276,11 @@ export default function NewPoster() {
               </Box>
             </VStack>
           </VStack>
-      </KeyboardAvoidingView>
-        </ScrollView>
+        </KeyboardAvoidingView>
+      </ScrollView>
       <HStack px={6} justifyContent='space-between' alignItems='center' bg='gray.100' pb={2} h={90} space={3}>
         <Button title='Cancelar' bgColor='gray.300' textColor='gray.600' flex={1} />
-        <Button title='Avançar' bgColor='gray.700' textColor='gray.100' flex={1} />
+        <Button isLoading={isLoadingButton} onPress={handleCreatePoster} title='Avançar' bgColor='gray.700' textColor='gray.100' flex={1} />
       </HStack>
     </SafeAreaView>
   )
