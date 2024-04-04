@@ -11,11 +11,19 @@ import Button from '@components/Button'
 import { api } from '@services/api'
 import { AppError } from '@utils/AppError'
 
+type PhotoFileProps = {
+  uri: string;
+  type: string;
+  name: string;
+  id?: string;
+  path?: string;
+};
+
 export default function NewPoster() {
   const imageWidth = Dimensions.get('window').width / 3 - 20
   const { goBack } = useNavigation()
   const [isLoadingButton, setIsLoadingButton] = useState(false)
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<PhotoFileProps[]>([]);
   const [acceptTrade, setAcceptTrade] = useState(false)
   const [radioValue, setRadioValue] = useState('')
   const [checkboxList, setCheckboxList] = useState<CheckboxList[]>([
@@ -69,14 +77,23 @@ export default function NewPoster() {
     }
 
     if (result.assets[0].uri !== null) {
-      const imgs: string[] = []
-      imgs.push(result.assets[0].uri)
-      setImages((prev: string[]) => [...prev, ...imgs]);
+      const newSelectedPhotos = result.assets.map((photo) => {
+        const filesExtension = photo.uri.split(".").pop();
+
+        const photoFile = {
+          uri: photo.uri,
+          type: `${photo.type}/${filesExtension}`,
+          name: `${Date.now()}.${filesExtension}`,
+        };
+
+        return photoFile;
+      });
+      setImages((prev) => [...prev, ...newSelectedPhotos]);
     }
   };
 
   const removeImage = (image: string) => {
-    const removedImage = images.filter(img => img !== image)
+    const removedImage = images.filter(img => img.uri !== image)
     setImages(removedImage)
   }
 
@@ -99,14 +116,16 @@ export default function NewPoster() {
     const form = new FormData()
     form.append('product_id', id);
     images.forEach(image => {
-      form.append('images', new Blob(image as any))
+      form.append('images', image as any)
     })
     try {
-      const { data } = await api.post(`/products/images`, {
-        form
+      const { data } = await api.post(`/products/images`, form, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       })
 
-      console.log(data)
+      console.log('send Images', data)
 
     } catch (error) {
       console.log(error)
@@ -134,7 +153,7 @@ export default function NewPoster() {
         accept_trade: acceptTrade,
         payment_methods: paymentMethodsPayload()
       })
-
+      console.log('create AD', data)
       if (data) {
         await handleCreateImageToPoster(data.id)
       }
@@ -174,7 +193,11 @@ export default function NewPoster() {
               <HStack mt={4} space={2} >
                 {images.length > 0 && images.map((image, index) => (
                   <Box key={index} w={imageWidth} h={imageWidth}>
-                    <Image rounded='md' source={{ uri: image }} alt='image' w={imageWidth} h={imageWidth} />
+                    <Image rounded='md' source={{
+                      uri: image.uri
+                        ? image.uri
+                        : `${api.defaults.baseURL}/images/${image.path}`
+                    }} alt='image' w={imageWidth} h={imageWidth} />
                     <Pressable
                       position='absolute'
                       right={1}
@@ -182,7 +205,7 @@ export default function NewPoster() {
                       bg='gray.600'
                       rounded='full'
                       p={1}
-                      onPress={() => removeImage(image)}
+                      onPress={() => removeImage(image.uri)}
                     >
                       <Feather
                         name="x"
