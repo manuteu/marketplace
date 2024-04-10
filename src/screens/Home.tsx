@@ -1,13 +1,12 @@
 import React, { useCallback, useState } from 'react'
 import { SafeAreaView } from 'react-native'
-import { Box, HStack, Image, Text, VStack, Pressable, ScrollView, FlatList, useToast, Center } from 'native-base'
+import { Box, HStack, Image, Text, VStack, Pressable, FlatList, useToast, Center, Skeleton } from 'native-base'
 import Button from '@components/Button'
 import { Feather } from '@expo/vector-icons'
 import PosterSvg from '@assets/poster.svg'
 import SheetFilter from '@components/SheetFilter'
 import Input from '@components/Input'
 import ProductCard from '@components/ProductCard'
-import GridView from '@components/GridView'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { StackNavigatorRoutesProps, TabNavigatorRoutesProps } from '@routes/app.routes'
 import { ProductDTO } from '@dtos/ProductDTO'
@@ -64,11 +63,6 @@ export default function Home() {
     }
   }
 
-  useFocusEffect(useCallback(() => {
-    handleGetPosters()
-  }, []))
-  const userPhoto = false
-
   const closeFilters = () => {
     setOpenFilters(false)
   }
@@ -78,6 +72,10 @@ export default function Home() {
       <Text color="gray.500">Nenhum anúncio encontrado :(</Text>
     </Center>
   );
+
+  useFocusEffect(useCallback(() => {
+    handleGetPosters()
+  }, []))
 
   return (
     <SafeAreaView style={{ paddingTop: 24 }}>
@@ -93,11 +91,11 @@ export default function Home() {
             justifyContent='center'
             bg='gray.700'
           >
-            {userPhoto ?
+            {user.avatar ?
               <Image
                 rounded='full'
                 size='full'
-                source={{ uri: userPhoto }}
+                source={{ uri: `${api.defaults.baseURL}/images/${user.avatar}` }}
                 alt='Foto do usuário'
               />
               :
@@ -145,22 +143,40 @@ export default function Home() {
             }
           />
         </Box>
-        <FlatList
-          data={products}
-          renderItem={({ item }) => <ProductCard onPress={() => stackNavigation.navigate('poster', { data: { ...item }, type: 'buyPoster' })} {...item} />}
-          numColumns={2}
-          contentContainerStyle={{
-            paddingBottom: 36,
-            gap: 24,
-          }}
-          columnWrapperStyle={{
-            gap: 20,
-          }}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={() => EmptyList()}
-          onRefresh={handleRefresh}
-          refreshing={isRefreshing}
-        />
+        {!products && loading ? (
+          <VStack pt={4} w='100%' flexDirection='row' space={2} flexWrap='wrap'>
+            {[1, 2, 3, 4].map((skeleton, index) => {
+              const itemStyle = index % 2 === 0 ? { paddingRight: 10 } : { paddingLeft: 10 };
+              return (
+                <VStack key={index} w='1/2' style={itemStyle} space={2} mb={5}>
+                  <Skeleton h="120" rounded='md' startColor='gray.200' endColor='gray.300' />
+                  <Box position='absolute' top={2} right={index % 2 === 0 ? 4 : 2} >
+                    <Skeleton h='17' w={10} rounded='full' startColor='gray.200' endColor='gray.200' />
+                  </Box>
+                  <Skeleton h='3' rounded='md' startColor='gray.200' endColor='gray.300' />
+                  <Skeleton h='3' w='1/2' rounded='md' startColor='gray.200' endColor='gray.300' />
+                </VStack>
+              )
+            })}
+          </VStack>
+        ) : (
+          <FlatList
+            data={products}
+            renderItem={({ item }) => <ProductCard onPress={() => stackNavigation.navigate('poster', { data: { ...item }, type: 'buyPoster' })} {...item} />}
+            numColumns={2}
+            contentContainerStyle={{
+              paddingBottom: 36,
+              gap: 24,
+            }}
+            columnWrapperStyle={{
+              gap: 20,
+            }}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={() => EmptyList()}
+            onRefresh={handleRefresh}
+            refreshing={isRefreshing}
+          />
+        )}
         <SheetFilter isOpen={openFilters} onClose={closeFilters} />
       </Box>
     </SafeAreaView>
