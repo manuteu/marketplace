@@ -89,7 +89,7 @@ export default function MyPosters() {
           <Text fontFamily='regular' fontSize='sm' color='gray.600'>{products.length} {products.length === 1 ? 'anúncio' : 'anúncios'}</Text>
           <Select filter={filter} setFilter={setFilter} />
         </HStack>
-        {loading ? (
+        {!filteredProducts && loading ? (
           <VStack pt={4} w='100%' flexDirection='row' space={2} flexWrap='wrap'>
             {[1, 2, 3, 4].map((skeleton, index) => {
               const itemStyle = index % 2 === 0 ? { paddingRight: 10 } : { paddingLeft: 10 };
@@ -109,7 +109,7 @@ export default function MyPosters() {
           <FlatList
             pt={4}
             data={filteredProducts}
-            renderItem={({ item }) => <ProductCard onPress={() => navigate('poster', { data: { ...item }, type: 'buyPoster' })} {...item} />}
+            renderItem={({ item }) => <ProductCard onPress={() => navigate('poster', { data: { ...item }, type: 'myPoster' })} {...item} />}
             keyExtractor={({ id }) => id}
             numColumns={2}
             contentContainerStyle={{

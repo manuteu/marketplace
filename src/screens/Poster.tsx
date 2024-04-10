@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, } from 'react-native-safe-area-context'
-import { Box, HStack, Image, Pressable, ScrollView, Text, VStack } from 'native-base'
+import { Box, HStack, Image, Pressable, ScrollView, Text, VStack, useToast } from 'native-base'
 import { Feather } from '@expo/vector-icons'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { StackNavigatorRoutesProps } from '@routes/app.routes'
-import Bike from '@assets/bike.png'
 import ProductContent from '@components/ProductContent'
 import Button from '@components/Button'
 import WppSvg from '@assets/wpp_icon.svg'
@@ -14,6 +13,7 @@ import { ProductDTO } from '@dtos/ProductDTO'
 import EditSvg from '@assets/edit_icon.svg'
 import { api } from '@services/api'
 import { formatMoney } from '@utils/maks'
+import { AppError } from '@utils/AppError'
 
 type RouteParamsProps = {
   data: ProductDTO;
@@ -27,11 +27,14 @@ type carouselData = {
 }
 
 export default function Poster() {
-  const { navigate } = useNavigation<StackNavigatorRoutesProps>()
+  const { navigate, goBack } = useNavigation<StackNavigatorRoutesProps>()
   const { params } = useRoute()
   const { data, type } = params as RouteParamsProps
   const width = Dimensions.get('window').width;
   const [carouselData, setcarouselData] = useState<carouselData[]>([])
+  const [loadingActiveButton, setLoadingActiveButton] = useState(false)
+  const [loadingDeleteButton, setLoadingDeleteButton] = useState(false)
+  const toast = useToast()
 
   const handleSwipeImage = (index: number) => {
     const newCarouselData = carouselData.map((item: any) => {
@@ -43,6 +46,59 @@ export default function Poster() {
       return item;
     })
     setcarouselData(newCarouselData)
+  }
+
+  const handleActiveProduct = async (status: boolean) => {
+    setLoadingActiveButton(true)
+    try {
+      await api.patch(`/products/${data.id}`, {
+        is_active: status
+      })
+
+      const title = status ? 'reativado!' : 'desativado!';
+      toast.show({
+        title: 'Produto ' + title,
+        bgColor: "green.500",
+      });
+      goBack()
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível atualizar o status do produto";
+
+      toast.show({
+        title,
+        bgColor: "red.400",
+      });
+    } finally {
+      setLoadingActiveButton(false);
+    }
+  }
+
+  const handleDeleteProduct = async () => {
+    setLoadingDeleteButton(true)
+    try {
+      await api.delete(`/products/${data.id}`)
+
+      toast.show({
+        title: 'Produto excluído',
+        bgColor: "green.500",
+      });
+      goBack()
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível excluir o produto";
+
+      toast.show({
+        title,
+        bgColor: "red.400",
+      });
+    } finally {
+      setLoadingDeleteButton(false);
+    }
   }
 
   useEffect(() => {
@@ -130,11 +186,11 @@ export default function Poster() {
         <>
           <VStack px={6} pb={5} space={2}>
             {data?.is_active ?
-              <Button title='Desativar anúncio' iconName='power' iconColor='#F7F7F8' bgColor='gray.700' textColor='gray.100' />
+              <Button isLoading={loadingActiveButton} onPress={() => handleActiveProduct(false)} title='Desativar anúncio' iconName='power' iconColor='#F7F7F8' bgColor='gray.700' textColor='gray.100' />
               :
-              <Button title='Reativar anúncio' iconName='power' iconColor='#F7F7F8' bgColor='blue.300' textColor='gray.100' />
+              <Button isLoading={loadingActiveButton} onPress={() => handleActiveProduct(true)} title='Reativar anúncio' iconName='power' iconColor='#F7F7F8' bgColor='blue.300' textColor='gray.100' />
             }
-            <Button title='Excluir anúncio' iconName='trash' iconColor='#3E3A40' bgColor='gray.300' textColor='gray.600' />
+            <Button _loading={{ color: 'blue.500' }} isLoading={loadingDeleteButton} onPress={handleDeleteProduct} title='Excluir anúncio' iconName='trash' iconColor='#3E3A40' bgColor='gray.300' textColor='gray.600' />
           </VStack>
         </>
       )}
