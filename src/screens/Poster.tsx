@@ -108,7 +108,15 @@ export default function Poster() {
           </HStack>
         </Box>
 
-        <ProductContent {...data} />
+        <ProductContent
+          accept_trade={data.accept_trade}
+          description={data.description}
+          images={data.product_images}
+          is_new={data.is_new}
+          name={data.name}
+          payment_methods={data.payment_methods}
+          price={data.price}
+        />
       </ScrollView>
       {type === 'buyPoster' ? (
         <HStack px={6} justifyContent='space-between' alignItems='center' bg='gray.100' pb={2} h={90}>

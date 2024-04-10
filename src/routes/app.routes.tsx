@@ -7,9 +7,10 @@ import { useTheme } from 'native-base'
 import MyPosters from '@screens/MyPosters'
 import SignOut from '@screens/SignOut'
 import { createNativeStackNavigator, NativeStackNavigationProp } from '@react-navigation/native-stack'
-import NewPoster from '@screens/NewPoster'
+import NewPoster, { ProductPreview } from '@screens/NewPoster'
 import Poster from '@screens/Poster'
 import EditPoster from '@screens/EditPoster'
+import PreviewPoster from '@screens/PreviewPoster'
 import { ProductDTO } from '@dtos/ProductDTO'
 
 type TabRoutes = {
@@ -26,6 +27,7 @@ type StackRoutes = {
   };
   newPoster: undefined;
   editPoster: undefined;
+  previewPoster: { data: ProductPreview; };
 }
 
 export type TabNavigatorRoutesProps = BottomTabNavigationProp<TabRoutes>
@@ -89,6 +91,7 @@ export function AppRoutes() {
       <Screen name="poster" component={Poster} />
       <Screen name="newPoster" component={NewPoster} />
       <Screen name="editPoster" component={EditPoster} />
+      <Screen name="previewPoster" component={PreviewPoster} />
     </Navigator>
   )
 }

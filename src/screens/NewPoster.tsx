@@ -10,6 +10,8 @@ import CheckboxGroup, { CheckboxList } from '@components/CheckboxGroup'
 import Button from '@components/Button'
 import { api } from '@services/api'
 import { AppError } from '@utils/AppError'
+import { StackNavigatorRoutesProps } from '@routes/app.routes'
+import { PaymentMethod, ProductImages } from '@dtos/ProductDTO'
 
 type PhotoFileProps = {
   uri: string;
@@ -19,9 +21,19 @@ type PhotoFileProps = {
   path?: string;
 };
 
+export type ProductPreview = {
+  name: string;
+  description: string;
+  price: number;
+  is_new: boolean;
+  accept_trade: boolean;
+  payment_methods: any[];
+  images: any[]
+}
+
 export default function NewPoster() {
   const imageWidth = Dimensions.get('window').width / 3 - 20
-  const { goBack } = useNavigation()
+  const { goBack, navigate } = useNavigation<StackNavigatorRoutesProps>()
   const [isLoadingButton, setIsLoadingButton] = useState(false)
   const [images, setImages] = useState<PhotoFileProps[]>([]);
   const [acceptTrade, setAcceptTrade] = useState(false)
@@ -30,27 +42,27 @@ export default function NewPoster() {
     {
       selected: false,
       name: 'Boleto',
-      value: 'boleto',
+      key: 'boleto',
     },
     {
       selected: false,
       name: 'Pix',
-      value: 'pix',
+      key: 'pix',
     },
     {
       selected: false,
       name: 'Dinheiro',
-      value: 'cash',
+      key: 'cash',
     },
     {
       selected: false,
       name: 'Cartão de Crédito',
-      value: 'card',
+      key: 'card',
     },
     {
       selected: false,
       name: 'Depósito Bancário',
-      value: 'deposit',
+      key: 'deposit',
     },
   ])
   const [name, setName] = useState('')
@@ -103,72 +115,6 @@ export default function NewPoster() {
       newList[index].selected = !newList[index].selected;
       return newList;
     });
-  }
-
-  const paymentMethodsPayload = () => {
-    const maps = checkboxList.filter(item => {
-      return item.selected
-    })
-    return maps.map(item => item.value)
-  }
-
-  const handleCreateImageToPoster = async (id: string) => {
-    const form = new FormData()
-    form.append('product_id', id);
-    images.forEach(image => {
-      form.append('images', image as any)
-    })
-    try {
-      const { data } = await api.post(`/products/images`, form, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-
-      console.log('send Images', data)
-
-    } catch (error) {
-      console.log(error)
-      const isAppError = error instanceof AppError
-      const title = isAppError ? error.message : 'Não foi possível cadastrar o anúncio.';
-
-      toast.show({
-        title,
-        placement: 'top',
-        bgColor: 'red.500'
-      })
-    } finally {
-      setIsLoadingButton(false)
-    }
-  }
-
-  const handleCreatePoster = async () => {
-    setIsLoadingButton(true)
-    try {
-      const { data } = await api.post(`/products`, {
-        name,
-        description,
-        price: Number(price),
-        is_new: radioValue === 'new' ? true : false,
-        accept_trade: acceptTrade,
-        payment_methods: paymentMethodsPayload()
-      })
-      console.log('create AD', data)
-      if (data) {
-        await handleCreateImageToPoster(data.id)
-      }
-
-    } catch (error) {
-      setIsLoadingButton(false)
-      const isAppError = error instanceof AppError
-      const title = isAppError ? error.message : 'Não foi possível registrar o anúncio.';
-
-      toast.show({
-        title,
-        placement: 'top',
-        bgColor: 'red.500'
-      })
-    }
   }
 
   return (
@@ -303,7 +249,17 @@ export default function NewPoster() {
       </ScrollView>
       <HStack px={6} justifyContent='space-between' alignItems='center' bg='gray.100' pb={2} h={90} space={3}>
         <Button title='Cancelar' bgColor='gray.300' textColor='gray.600' flex={1} />
-        <Button isLoading={isLoadingButton} onPress={handleCreatePoster} title='Avançar' bgColor='gray.700' textColor='gray.100' flex={1} />
+        <Button isLoading={isLoadingButton} onPress={() => navigate('previewPoster', {
+          data: {
+            name,
+            description,
+            price: Number(price),
+            images,
+            is_new: radioValue === 'new' ? true : false,
+            accept_trade: acceptTrade,
+            payment_methods: checkboxList
+          }
+        })} title='Avançar' bgColor='gray.700' textColor='gray.100' flex={1} />
       </HStack>
     </SafeAreaView>
   )

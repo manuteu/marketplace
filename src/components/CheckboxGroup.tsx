@@ -3,7 +3,7 @@ import { Checkbox, Text, VStack } from 'native-base'
 
 export type CheckboxList = {
   selected: boolean;
-  value: string;
+  key: string;
   name: string;
 
 }
@@ -20,7 +20,7 @@ export default function CheckboxGroup({ checkboxList, onSelected }: Props) {
         <Checkbox
           key={index}
           mb={2}
-          value={checkbox.value}
+          value={checkbox.key}
           onChange={() => {
             onSelected(index)
           }}

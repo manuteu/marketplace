@@ -5,8 +5,9 @@ import PaymentMethodItem from './PaymentMethodItem'
 import { PaymentMethod, ProductDTO } from '@dtos/ProductDTO'
 import { useAuth } from '@hooks/useAuth'
 import { formatMoney } from '@utils/maks'
+import { ProductPreview } from '@screens/NewPoster'
 
-export default function ProductContent({ name, is_new, accept_trade, description, price, product_images, payment_methods,  }: ProductDTO) {
+export default function ProductContent({ name, is_new, accept_trade, description, price, payment_methods }: ProductPreview) {
   const { user } = useAuth()
 
   return (
@@ -34,7 +35,7 @@ export default function ProductContent({ name, is_new, accept_trade, description
 
       <HStack mt={4} space={2}>
         <Text fontFamily='bold' fontSize='sm' color='gray.600' >Aceita troca?</Text>
-        <Text fontFamily='regular' fontSize='sm' color='gray.600'>{accept_trade ? 'Sim': 'Não'}</Text>
+        <Text fontFamily='regular' fontSize='sm' color='gray.600'>{accept_trade ? 'Sim' : 'Não'}</Text>
       </HStack>
 
       <VStack mt={4}>
