@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from 'react'
-import { SafeAreaView } from 'react-native'
-import { Box, HStack, Image, Text, VStack, Pressable, FlatList, useToast, Center, Skeleton } from 'native-base'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Keyboard, SafeAreaView } from 'react-native'
+import { Box, HStack, Image, Text, VStack, Pressable, FlatList, useToast, Center, Skeleton, KeyboardAvoidingView } from 'native-base'
 import Button from '@components/Button'
 import { Feather } from '@expo/vector-icons'
 import PosterSvg from '@assets/poster.svg'
@@ -21,6 +21,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [products, setProducts] = useState<ProductDTO[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [filterString, setFilterString] = useState('');
   const toast = useToast()
   const { user } = useAuth()
 
@@ -63,6 +64,29 @@ export default function Home() {
     }
   }
 
+  async function handleProductSearch(searchProduct: string) {
+    setLoading(true)
+    try {
+      if (!searchProduct) return;
+
+      const { data } = await api.get(`/products?query=${searchProduct}`);
+
+      setProducts(data);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível carregar o histórico";
+
+      toast.show({
+        title,
+        bgColor: "red.400",
+      });
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const closeFilters = () => {
     setOpenFilters(false)
   }
@@ -77,9 +101,16 @@ export default function Home() {
     handleGetPosters()
   }, []))
 
+  useEffect(() => {
+    if (filterString.length === 0) {
+      handleGetPosters()
+    }
+  }, [filterString])
+
+
   return (
     <SafeAreaView style={{ paddingTop: 24 }}>
-      <Box p={6}>
+      <Pressable onPress={() => Keyboard.dismiss()} p={6}>
         <HStack style={{ gap: 6 }} alignItems='center'>
           <Box
             w={12}
@@ -130,9 +161,11 @@ export default function Home() {
             mt={3}
             placeholder='Buscar anúncio'
             bg='white'
+            value={filterString}
+            onChangeText={(f) => setFilterString(f)}
             rightElement={
               <HStack>
-                <Pressable px={3}>
+                <Pressable px={3} onPress={() => handleProductSearch(filterString)}>
                   <Feather name="search" size={20} color="#3E3A40" />
                 </Pressable>
                 <Box borderWidth={0.5} borderColor='gray.400' h={5} borderRadius='full' />
@@ -178,7 +211,7 @@ export default function Home() {
           />
         )}
         <SheetFilter isOpen={openFilters} onClose={closeFilters} />
-      </Box>
+      </Pressable>
     </SafeAreaView>
   )
 }
