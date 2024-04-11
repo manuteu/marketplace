@@ -53,9 +53,10 @@ export default function SignIn() {
       contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
       bounces={false}
+      bgColor='gray.200'
     >
       <KeyboardAvoidingView {...(Platform.OS === 'ios' && { behavior: 'position' })} flex={1}>
-        <VStack bgColor='gray.100' px={10} borderBottomRadius={24} justifyContent='center' h='full'>
+        <VStack px={10} borderBottomRadius={24} justifyContent='center' h='full'>
           <Center>
             <LogoSvg />
             <Box my={2} />

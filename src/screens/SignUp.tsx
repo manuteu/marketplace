@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Box, Center, Heading, ScrollView, Text, VStack, KeyboardAvoidingView, Image, useToast, Skeleton } from 'native-base'
+import { Box, Center, ScrollView, Text, VStack, KeyboardAvoidingView, Image, useToast, Skeleton } from 'native-base'
 import Input from '@components/Input'
-import { Platform, TouchableOpacity } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import { Feather } from '@expo/vector-icons';
 import Button from '@components/Button';
 import LogoSvg from '@assets/logo_marketplace.svg'
@@ -12,6 +12,15 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthNavigatorRoutesProps } from '@routes/auth.routes';
 import { api } from '@services/api';
 import { AppError } from '@utils/AppError';
+import { useAuth } from '@hooks/useAuth';
+
+type PhotoFileProps = {
+  uri: string;
+  type: string;
+  name: string;
+  id?: string;
+  path?: string;
+};
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false)
@@ -21,10 +30,10 @@ export default function SignUp() {
   const [email, setEmail] = useState('')
   const [tel, setTel] = useState('')
   const [password, setPassword] = useState('')
-  const [userAvatar, setUserAvatar] = useState<string | undefined>()
-  const [userAvatarFormData, setUserAvatarFormData] = useState<any>()
+  const [userAvatar, setUserAvatar] = useState<PhotoFileProps>()
   const toast = useToast()
   const { navigate } = useNavigation<AuthNavigatorRoutesProps>()
+  const { signIn } = useAuth()
 
   const handleGoToSignIn = () => {
     navigate('signIn')
@@ -33,20 +42,25 @@ export default function SignUp() {
   const handleUserPhotoSelect = async () => {
     setLoadingImage(true)
     try {
-      const photoSelected = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
-        aspect: [4, 4],
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
-      })
+        aspect: [4, 4],
+        quality: 1,
+      });
 
-      if (!photoSelected.assets) {
+      if (result.canceled) {
+        toast.show({
+          title: 'Imagem Cancelada',
+          tintColor: 'yellow.500',
+          placement: 'top',
+        })
         return
       }
 
       // Utiliza o FileSystem para verificar o tamanho da imagem, já que o Image picker não possui essa função
-      if (photoSelected.assets[0].uri) {
-        const photoInfo = await FileSystem.getInfoAsync(photoSelected.assets[0].uri)
+      if (result.assets[0].uri) {
+        const photoInfo = await FileSystem.getInfoAsync(result.assets[0].uri)
 
         // Converte para 5 MB
         if (photoInfo.exists && photoInfo.size && (photoInfo.size / 1024 / 1024) > 5) {
@@ -58,20 +72,18 @@ export default function SignUp() {
           })
         }
 
-        const fileExtension = photoSelected.assets[0].uri.split(".").pop();
-        const photoFile = {
-          name: `${name}.${fileExtension}`.toLowerCase(),
-          uri: photoSelected.assets[0].uri,
-          type: `${photoSelected.assets[0].type}/${fileExtension}`,
-        } as any;
+        const newSelectedPhotos = result.assets.map((photo) => {
+          const filesExtension = photo.uri.split(".").pop();
 
-        setUserAvatarFormData(photoFile);
-        setUserAvatar(photoSelected.assets[0].uri)
-        toast.show({
-          title: 'Foto atualizada!',
-          placement: 'top',
-          bgColor: 'green.500'
-        })
+          const photoFile = {
+            uri: photo.uri,
+            type: `${photo.type}/${filesExtension}`,
+            name: `${Date.now()}.${filesExtension}`,
+          };
+
+          return photoFile;
+        });
+        setUserAvatar(newSelectedPhotos[0])
       }
 
     } catch (error) {
@@ -83,8 +95,6 @@ export default function SignUp() {
 
   const handleSignUp = async () => {
     setLoadingButton(true)
-    // console.log('userAvatar', userAvatar);
-    // console.log('userAvatarFormData', userAvatarFormData);
 
     try {
       const form = new FormData()
@@ -92,19 +102,21 @@ export default function SignUp() {
       form.append('email', email);
       form.append('tel', tel);
       form.append('password', password);
-      form.append('avatar', userAvatarFormData)
-      console.log(form);
-      
-      const { data } = await api.post('/users', {
-        form
-        // name,
-        // email,
-        // tel,
-        // password,
-        // userAvatarFormData
-      })
-      console.log(data);
+      form.append('avatar', userAvatar as any)
 
+      await api.post('/users', form, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
+      toast.show({
+        title: 'Usuário cadastrado!',
+        placement: 'top',
+        bgColor: 'green.500'
+      })
+
+      await handleSignIn()
     } catch (error) {
       console.log(error);
 
@@ -116,6 +128,16 @@ export default function SignUp() {
         bgColor: 'red.500'
       })
       setLoadingButton(false)
+    }
+  }
+
+  const handleSignIn = async () => {
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      console.log(error)
+      navigate('signIn')
+      setLoadingButton(false)
     } finally {
       setLoadingButton(false)
     }
@@ -125,7 +147,7 @@ export default function SignUp() {
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
       bounces={false}
-      bgColor='gray.100'
+      bgColor='gray.200'
     >
       <KeyboardAvoidingView flex={1} >
         <VStack px={10} justifyContent='center' mt={10}>
@@ -146,11 +168,11 @@ export default function SignUp() {
                   endColor='gray.600'
                 />
               )}
-              {!loadingImage && userAvatar ?
+              {!loadingImage && userAvatar?.uri ?
                 <Image
                   rounded='full'
                   size='full'
-                  source={{ uri: userAvatar }}
+                  source={{ uri: userAvatar.uri }}
                   alt='Foto do usuário'
                 />
                 : !loadingImage &&
