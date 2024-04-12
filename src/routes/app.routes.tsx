@@ -26,7 +26,9 @@ type StackRoutes = {
     type: 'myPoster' | 'buyPoster'
   };
   newPoster: undefined;
-  editPoster: undefined;
+  editPoster: {
+    data: ProductDTO;
+  };
   previewPoster: { data: ProductPreview; };
 }
 
