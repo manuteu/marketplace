@@ -21,6 +21,7 @@ export default function CheckboxGroup({ checkboxList, onSelected }: Props) {
           key={index}
           mb={2}
           value={checkbox.key}
+          isChecked={checkbox.selected}
           onChange={() => {
             onSelected(index)
           }}

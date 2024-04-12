@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, HStack, Image, Text, VStack } from 'native-base'
 import User from '@assets/user.png'
 import PaymentMethodItem from './PaymentMethodItem'

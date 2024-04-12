@@ -36,9 +36,9 @@ export default function Poster() {
   const [loadingDeleteButton, setLoadingDeleteButton] = useState(false)
   const toast = useToast()
 
-  const handleSwipeImage = (index: number) => {
-    const newCarouselData = carouselData.map((item: any) => {
-      if (item.id === index) {
+  const handleSwipeImage = (id: number) => {
+    const newCarouselData = carouselData.map((item, index) => {
+      if (index === id) {
         item.active = true
       } else {
         item.active = false;
@@ -117,9 +117,11 @@ export default function Poster() {
         <Pressable onPress={() => navigate('stackHome')}>
           <Feather name="arrow-left" size={24} color="#1A181B" />
         </Pressable>
-        <Pressable onPress={() => navigate('editPoster')}>
-          <EditSvg />
-        </Pressable>
+        {type === 'myPoster' && (
+          <Pressable onPress={() => navigate('editPoster', { data })}>
+            <EditSvg />
+          </Pressable>
+        )}
       </HStack>
       <ScrollView showsVerticalScrollIndicator={false} >
         <Box width={width} height={width / 3 * 2}>

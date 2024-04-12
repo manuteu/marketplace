@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, } from 'react-native-safe-area-context'
-import { Box, Center, HStack, Image, Pressable, ScrollView, StatusBar, Text, VStack, useToast } from 'native-base'
-import { Feather } from '@expo/vector-icons'
+import { Box, HStack, Image, ScrollView, StatusBar, Text, VStack, useToast } from 'native-base'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import { StackNavigatorRoutesProps } from '@routes/app.routes'
+import { TabNavigatorRoutesProps } from '@routes/app.routes'
 import ProductContent from '@components/ProductContent'
 import Button from '@components/Button'
-import WppSvg from '@assets/wpp_icon.svg'
 import Carousel from 'react-native-reanimated-carousel'
 import { Dimensions } from 'react-native'
-import { ProductDTO } from '@dtos/ProductDTO'
-import EditSvg from '@assets/edit_icon.svg'
 import { api } from '@services/api'
-import { formatMoney } from '@utils/maks'
 import { AppError } from '@utils/AppError'
 import { ProductPreview } from './NewPoster'
 
@@ -28,7 +23,7 @@ type carouselData = {
 }
 
 export default function PreviewPoster() {
-  const { goBack } = useNavigation<StackNavigatorRoutesProps>()
+  const { navigate, goBack } = useNavigation<TabNavigatorRoutesProps>()
   const { params } = useRoute()
   const { data: { accept_trade, description, images, is_new, name, payment_methods, price } } = params as RouteParamsProps
   const data = { accept_trade, description, images, is_new, name, payment_methods, price }
@@ -56,14 +51,18 @@ export default function PreviewPoster() {
       form.append('images', image as any)
     })
     try {
-      const { data } = await api.post(`/products/images`, form, {
+      await api.post(`/products/images`, form, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       })
 
-      console.log('send Images', data)
-
+      toast.show({
+        title: 'Anúncio criado com sucesso',
+        placement: 'top',
+        bgColor: 'green.500'
+      })
+      navigate('posters')
     } catch (error) {
       console.log(error)
       const isAppError = error instanceof AppError
@@ -81,6 +80,10 @@ export default function PreviewPoster() {
 
   const handleCreatePoster = async () => {
     setIsLoadingButton(true)
+    const filteredPaymentMethods = payment_methods.filter(item => {
+      return item.selected
+    })
+
     try {
       const { data } = await api.post(`/products`, {
         name,
@@ -88,9 +91,8 @@ export default function PreviewPoster() {
         price,
         is_new,
         accept_trade,
-        payment_methods
+        payment_methods: filteredPaymentMethods.map(item => item.key)
       })
-      console.log('create AD', data)
       if (data) {
         await handleCreateImageToPoster(data.id)
       }
@@ -143,7 +145,7 @@ export default function PreviewPoster() {
           </HStack>
         </Box>
 
-        <ProductContent {...data} />
+        <ProductContent {...data} payment_methods={data.payment_methods.filter(item => item.selected)} />
       </ScrollView>
       <HStack px={6} justifyContent='space-between' alignItems='center' bg='gray.100' pb={2} h={90} space={3}>
         <Button iconName='arrow-left' iconColor='#3E3A40' title='Voltar e editar' bgColor='gray.300' textColor='gray.600' flex={1} onPress={() => goBack()} />

@@ -9,6 +9,7 @@ export interface ProductUser {
 export interface PaymentMethod {
   key: 'boleto' | 'cash' | 'deposit' | 'pix' | 'card';
   name: string;
+  selected?: boolean;
 }
 
 export interface ProductImages {
