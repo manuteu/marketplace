@@ -10,8 +10,8 @@ import CheckboxGroup, { CheckboxList } from '@components/CheckboxGroup'
 import Button from '@components/Button'
 import { api } from '@services/api'
 import { AppError } from '@utils/AppError'
-import { StackNavigatorRoutesProps } from '@routes/app.routes'
-import { PaymentMethod, ProductDTO, ProductImages } from '@dtos/ProductDTO'
+import { TabNavigatorRoutesProps } from '@routes/app.routes'
+import { ProductDTO } from '@dtos/ProductDTO'
 
 type RouteParamsProps = {
   data: ProductDTO;
@@ -38,9 +38,9 @@ export type ProductPreview = {
 
 export default function EditPoster() {
   const imageWidth = Dimensions.get('window').width / 3 - 20
-  const { goBack, navigate } = useNavigation<StackNavigatorRoutesProps>()
+  const { goBack, navigate } = useNavigation<TabNavigatorRoutesProps>()
   const { params } = useRoute()
-  const { data, type } = params as RouteParamsProps
+  const { data } = params as RouteParamsProps
   const [isLoadingButton, setIsLoadingButton] = useState(false)
   const [images, setImages] = useState<PhotoFileProps[]>([]);
   const [acceptTrade, setAcceptTrade] = useState(data.accept_trade)
@@ -74,11 +74,11 @@ export default function EditPoster() {
   ])
   const [name, setName] = useState(data.name)
   const [description, setDescription] = useState(data.description)
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([])
   const [price, setPrice] = useState(data.price.toString())
   const toast = useToast()
 
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -112,9 +112,12 @@ export default function EditPoster() {
   };
 
   const removeImage = (image: string) => {
-    console.log(image)
     const removedImage = images.filter(img => {
       if (img.path) {
+        setImagesToDelete((prevImages) => [
+          ...prevImages,
+          img.id as string,
+        ]);
         return img.path !== image
       }
       return img.uri !== image
@@ -130,48 +133,59 @@ export default function EditPoster() {
     });
   }
 
-  useEffect(() => {
-    const selecteds = checkboxList.map((check) => {
-      const checked = data.payment_methods.find((method) => method.key === check.key);
-      if (checked) {
-        check.selected = true;
-      }
-      return check
-    })
-    setCheckboxList(selecteds)
 
-    const productImages = data.product_images.map((image) => {
-      const photoFilte = {
-        uri: image,
-        // type: `${photo.type}/${filesExtension}`,
-        // name: `${Date.now()}.${filesExtension}`,
-      }
-    })
 
-    if (images.length === 0) {
-      setImages((prev) => [...prev, ...data.product_images as any]);
-    }
-  }, [])
-
-  const handleCreateImageToPoster = async (id: string) => {
-    const form = new FormData()
-    form.append('product_id', id);
-    images.forEach(image => {
-      form.append('images', image as any)
+  const handleEditPoster = async () => {
+    setIsLoadingButton(true)
+    const filteredPaymentMethods = checkboxList.filter(item => {
+      return item.selected
     })
     try {
-      const { data } = await api.post(`/products/images`, form, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      await api.put(`/products/${data.id}`, {
+        name,
+        description,
+        price: Number(price),
+        is_new: radioValue === 'new' ? true : false,
+        accept_trade: acceptTrade,
+        payment_methods: filteredPaymentMethods.map(item => item.key)
       })
 
-      console.log('send Images', data)
+      if (images.some((item) => item.hasOwnProperty("uri"))) {
+        const formData = new FormData();
+        formData.append("product_id", data.id);
+        images.forEach((image) => {
+          formData.append("images", image as any);
+        });
 
+        await api
+          .post("/products/images", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          .then(() => {
+            console.log("product images edited with success!");
+          })
+          .catch((error) => {
+            console.log("error to add product images:", error);
+          });
+      }
+
+      if (imagesToDelete.length > 0) {
+        try {
+          await api.delete("/products/images", {
+            data: { productImagesIds: imagesToDelete },
+          });
+        } catch (error) {
+          console.log("error to delete images:", error);
+        }
+      }
+      setTimeout(() => {
+        navigate('posters')
+      }, 1000);
     } catch (error) {
-      console.log(error)
       const isAppError = error instanceof AppError
-      const title = isAppError ? error.message : 'Não foi possível cadastrar o anúncio.';
+      const title = isAppError ? error.message : 'Não foi possível registrar o anúncio.';
 
       toast.show({
         title,
@@ -183,34 +197,20 @@ export default function EditPoster() {
     }
   }
 
-  const handleCreatePoster = async () => {
-    setIsLoadingButton(true)
-    try {
-      const { data } = await api.post(`/products`, {
-        name,
-        description,
-        price,
-        is_new: radioValue === 'new' ? true : false,
-        accept_trade: acceptTrade,
-        payment_methods: checkboxList
-      })
-      console.log('create AD', data)
-      if (data) {
-        await handleCreateImageToPoster(data.id)
+  useEffect(() => {
+    const selecteds = checkboxList.map((check) => {
+      const checked = data.payment_methods.find((method) => method.key === check.key);
+      if (checked) {
+        check.selected = true;
       }
+      return check
+    })
+    setCheckboxList(selecteds)
 
-    } catch (error) {
-      setIsLoadingButton(false)
-      const isAppError = error instanceof AppError
-      const title = isAppError ? error.message : 'Não foi possível registrar o anúncio.';
-
-      toast.show({
-        title,
-        placement: 'top',
-        bgColor: 'red.500'
-      })
+    if (images.length === 0) {
+      setImages((prev) => [...prev, ...data.product_images as any]);
     }
-  }
+  }, [])
 
   return (
     <SafeAreaView style={{ paddingTop: 24, flex: 1, backgroundColor: '#EDECEE' }}>
@@ -343,8 +343,8 @@ export default function EditPoster() {
         </KeyboardAvoidingView>
       </ScrollView>
       <HStack px={6} justifyContent='space-between' alignItems='center' bg='gray.100' pb={2} h={90} space={3}>
-        <Button title='Cancelar' bgColor='gray.300' textColor='gray.600' flex={1} />
-        <Button isLoading={isLoadingButton} onPress={handleCreatePoster} title='Atualizar' bgColor='gray.700' textColor='gray.100' flex={1} />
+        <Button onPress={goBack} title='Cancelar' bgColor='gray.300' textColor='gray.600' flex={1} />
+        <Button isLoading={isLoadingButton} onPress={handleEditPoster} title='Atualizar' bgColor='gray.700' textColor='gray.100' flex={1} />
       </HStack>
     </SafeAreaView>
   )
